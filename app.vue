@@ -30,13 +30,32 @@
             <div
               :id="`modal${i}`"
               class="modal hidden bg-gray-400 bg-opacity-90 overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 bottom-0 z-50 flex justify-center items-center h-100vh w-100vw"
-            >
+              >
               <div class="overlay"></div>
+
+              <button
+                v-if="activeSlide > 0"
+                @click="handleSlider(activeSlide - 1)"
+                class="arrow text-xl font-semibold absolute left-10 bottom-10 lg:bottom-1/2"
+                title="previous image"
+                >
+                prev
+              </button>
+
               <img
                 class="modal-img rounded-lg"
                 :src="img.img_src"
                 :alt="getAltText(img)"
               >
+
+              <button
+                v-if="activeSlide < images.length - 1"
+                @click="handleSlider(activeSlide + 1)"
+                class="arrow text-xl font-semibold absolute right-10 bottom-10 lg:bottom-1/2"
+                title="next image"
+              >
+                next
+              </button>
             </div>
   
             <small>
@@ -86,6 +105,7 @@
   noMoreMsg = '',
   errorMsg = '';
   const componentKey = ref(0);
+  const activeSlide = ref(-1)
 
   // methods
   /**
@@ -159,27 +179,44 @@
   }
   
   /**
-   * open modal with image with index 'i'
+   * open modal with image of index 'i'
    * @param  {string} i the image index
    */
   const openModal = (i) => {
+    activeSlide.value = i;
+
     document.getElementById(`modal${i}`).classList.remove('hidden');
+
     window.addEventListener('click', (e) => {
       const target = [...e.target.classList];
-      if (target.includes('main-img') || target.includes('modal-img')) return;
+      if (target.includes('main-img') || target.includes('modal-img') || target.includes('arrow')) return;
       closeModal(i);
+      activeSlide.value = -1;
     })
+
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal(i);
+      if (e.key === 'Escape') {
+        closeModal(i);
+        activeSlide.value = -1;
+      }
     })
   }
 
   /**
-   * close modal with image with index 'i'
+   * close modal with image of index 'i'
    * @param  {string} i the image index
    */
   const closeModal = (i) => {
     document.getElementById(`modal${i}`).classList.add('hidden');
+  }
+
+  /**
+   * flip from active slide to new slide in modal
+   * @param  {number} newSlide the index of the new slide
+   */
+  const handleSlider = (newSlide) => {
+    closeModal(activeSlide.value);
+    openModal(newSlide);
   }
 
   /**
