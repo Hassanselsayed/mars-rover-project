@@ -1,8 +1,8 @@
 <template>
   <div
-    class="bg-gray-100 relative"
+    class="app bg-gray-100 relative"
   >
-    <div class="container mx-auto py-10">
+    <div class="app-container container mx-auto py-10">
       <h1 class="header-text mx-5 mb-5 text-center text-xl font-bold">
         A collection of images taken on Mars on 2015-05-30
       </h1>
@@ -10,11 +10,12 @@
       <section class="gallery-section p-5 bg-white rounded-lg min-h-[75vh]">
         <div
           v-if="images.length > 0"
-          class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4"
+          class="gallery-container grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4"
           :key="componentKey"
         >
           <div
             v-for="(img, i) in images"
+            class="main-images"
             :key="i"
           >
             <img
@@ -26,7 +27,10 @@
               @click="openModal(i)"
             >
             
-            <div :id="`modal${i}`" class="hidden bg-gray-400 bg-opacity-90 overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 bottom-0 z-50 flex justify-center items-center h-100vh w-100vw">
+            <div
+              :id="`modal${i}`"
+              class="modal hidden bg-gray-400 bg-opacity-90 overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 bottom-0 z-50 flex justify-center items-center h-100vh w-100vw"
+            >
               <div class="overlay"></div>
               <img
                 class="modal-img rounded-lg"
@@ -42,20 +46,27 @@
             </small>
           </div>
 
-          <div v-if="noMoreMsg" class="no-more-data text-center col-span-full mt-5">
+          <div
+            v-if="noMoreMsg"
+            class="no-more-data text-center col-span-full mt-5"
+          >
             {{ noMoreMsg }}
           </div>
         </div>
   
-        <div v-if="errorMsg" class="blocking-errors flex items-center justify-center h-[60vh] text-center" :key="componentKey">
-          <p>{{ errorMsg }}</p>
+        <div
+          v-if="errorMsg"
+          class="blocking-errors flex items-center justify-center h-[60vh] text-center"
+          :key="componentKey"
+        >
+          {{ errorMsg }}
         </div>
       </section>
 
       <h2 class="footer-text mx-5 mt-10 text-center">
         *** All the data displayed on this page is fetched from the
         <NuxtLink
-          class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+          class="api-link font-medium text-blue-600 dark:text-blue-500 hover:underline"
           to="https://api.nasa.gov/#mars-rover-photos"
           target="_blank"
         >
@@ -70,13 +81,16 @@
 <script setup>
   import { onMounted, ref, onUpdated } from 'vue';
 
-  let pageNumber = 1;
-  let images = [];
-  let noMoreMsg = '';
-  let errorMsg = '';
+  let pageNumber = 1,
+  images = [],
+  noMoreMsg = '',
+  errorMsg = '';
   const componentKey = ref(0);
 
   // methods
+  /**
+   * register IntersectionObserver to implement infinte scrolling
+   */
   const registerObserver = () => {
     const options = {
       rootMargin: '50px',
@@ -96,11 +110,13 @@
     observer.observe(element);
   }
 
+  /**
+   * make api call to fetch data and handle the response/error
+   */
   const fetchData = async () => {
-    // const { data } = await useFetch('/api/nasa');
-
     try {
-      const response = await useFetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&page=${pageNumber}&api_key=FmcghkDwhYEdeghM4tgl5Z5xdbsPscbqTA32ToNF`);
+      const response = await useFetch(`/api/nasa?page=${pageNumber}`);
+
       const errorCode = response.error._object[response.error._key]?.statusCode; 
       const { data } = response;
 
@@ -114,14 +130,18 @@
 
     } catch (err) {
       componentKey.value = -1;
-      getErrorMessage(err.message)
+      getErrorMessage(err.message);
     }
   }
 
+  /**
+   * get error message based on thrown error
+   * @param  {string} code the error status code
+   */
   const getErrorMessage = (code) => {
     // error 429 - too many requests
     if (code === '429') {
-      const baseText = 'Too many requests have been made in the past hour. Please wait some time (up to an hour) and try to use the site again.'
+      const baseText = 'Too many requests have been made in the past hour. Please wait some time (up to an hour) and try to use the site again.';
       errorMsg = images.length
       ? `Couldn't fetch more data. ${baseText}`  
       : baseText
@@ -130,14 +150,18 @@
     
     // error 404 - not found
     if (code === '404' && images.length) {
-      noMoreMsg = 'No more data to fetch. Enjoy the pictures available above.'
+      noMoreMsg = 'No more data to fetch. Enjoy the pictures available above.';
       return;
     }
     
-    // forbidden/blocked request
-    errorMsg = 'It looks like the API from which we fetch our data has blocked our request. We are working to get it back up shortly.'
+    // forbidden/blocked requests
+    errorMsg = 'It looks like the API from which we fetch our data has blocked our request. We are working to get it back up shortly.';
   }
   
+  /**
+   * open modal with image with index 'i'
+   * @param  {string} i the image index
+   */
   const openModal = (i) => {
     document.getElementById(`modal${i}`).classList.remove('hidden');
     window.addEventListener('click', (e) => {
@@ -150,12 +174,20 @@
     })
   }
 
+  /**
+   * close modal with image with index 'i'
+   * @param  {string} i the image index
+   */
   const closeModal = (i) => {
     document.getElementById(`modal${i}`).classList.add('hidden');
   }
 
+  /**
+   * get alt text for image object 'img'
+   * @param  {Object} img the image object
+   */
   const getAltText = (img) => {
-    return `Image of Mars, taken by the ${img.rover.name} rover, using its ${img.camera.name} camera.`
+    return `Image of Mars, taken by the ${img.rover.name} rover, using its ${img.camera.name} camera.`;
   }
 
   
@@ -163,7 +195,6 @@
   onMounted(() => {
     if (images.length) registerObserver();
   });
-  
   onUpdated(() => {
     registerObserver();
   });
