@@ -34,6 +34,13 @@
               <div class="overlay"></div>
 
               <button
+                @click="closeModal(activeSlide)"
+                class="absolute top-10 right-10 text-3xl font-semibold"
+              >
+                X
+              </button>
+
+              <button
                 v-if="activeSlide > 0"
                 @click="handleSlider(activeSlide - 1)"
                 class="arrow text-xl font-semibold absolute left-10 bottom-10 lg:bottom-1/2"
