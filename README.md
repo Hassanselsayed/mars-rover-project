@@ -1,5 +1,13 @@
 ### [Site Link](https://helsayed-mars-rover.netlify.app/)
 
+### Local environment
+To run the project locally please follow these steps:
+- clone repo from your terminal
+- make sure you are using a node version from v18.0.0 and higher
+- run `npm install`
+- create a `.env` file and add the following variable to it `NASA_API_KEY`, then add your [Nasa Api](https://api.nasa.gov/#mars-rover-photos) Key
+- in your terminal, run `npm run dev`
+
 ## Mars Rover Project
 Create a project using Nuxt.js (version 2 or 3) named “Mars Rover Project”, incorporating
 Tailwind CSS. This project will interact with NASA’s public API to display images from the Mars
