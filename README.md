@@ -1,5 +1,7 @@
 ### [Site Link](https://helsayed-mars-rover.netlify.app/)
 
+# Mars Rover Project
+
 ### Local environment
 To run the project locally please follow these steps:
 - clone repo from your terminal
